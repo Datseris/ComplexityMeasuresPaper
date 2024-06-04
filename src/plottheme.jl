@@ -1,6 +1,7 @@
 export COLORSCHEME, COLORS, MARKERS, LINESTYLES
 export figuretitle!, axesgrid, subplotgrid
 export label_axes!, space_out_legend!
+export lighten, invert_luminance
 
 ########################################################################################
 # Colorscheme
@@ -15,6 +16,14 @@ COLORSCHEMES = Dict(
         "#791457",
         "#6C768C",
     ],
+    "JuliaDynamicsLight" => [ # for usage with dark background
+        "#855DE4",
+        "#B7BEF1",
+        "#15C1A5",
+        "#DCC261",
+        "#EC59BB",
+        "#737A8C",
+    ],
     "Petrol" => [
         "#006269",
         "#BD5DAA",
@@ -22,6 +31,14 @@ COLORSCHEMES = Dict(
         "#86612A",
         "#691105",
         "#00A9B5",
+    ],
+    "CloudySky" => [
+        "#0099CC",
+        "#67757E",
+        "#1B1D4B",
+        "#D07B17",
+        "#6F0D4D",
+        "#0D9276",
     ],
     "Flames" => [
         "#84150F",
@@ -32,30 +49,32 @@ COLORSCHEMES = Dict(
         "#9C278C",
     ],
     "GreenMetal" => [
-        "#478C5C",
-        "#184B29",
-        "#2B1E1E", # darkest
-        "#8A9EA0",
-        "#224269",
-        "#A2CD88", # lightest
+        "#35B15A",
+        "#748790",
+        "#125D1D",
+        "#BBA222",
+        "#2B33AD",
+        "#2B2931",
     ],
-
 )
 
+# ENV["COLORSCHEME"]  = "JuliaDynamicsLight" # change this to test
+TEST_NEW_THEME = false
 COLORSCHEME = COLORSCHEMES[get(ENV, "COLORSCHEME", "JuliaDynamics")]
-# ENV["TEST_NEW_THEME"] = true
-TEST_NEW_THEME = get(ENV, "TEST_NEW_THEME", "false") == "true"
+BGCOLOR = get(ENV, "BGCOLOR", :transparent)
+AXISCOLOR = get(ENV, "AXISCOLOR", :black)
 
-mutable struct CyclicContainer
-    c::Vector
+mutable struct CyclicContainer{V} <: AbstractVector{V}
+    c::Vector{V}
     n::Int
 end
 CyclicContainer(c) = CyclicContainer(c, 0)
 
+Base.size(c::CyclicContainer) = size(c.c)
 Base.length(c::CyclicContainer) = length(c.c)
 Base.iterate(c::CyclicContainer, state=1) = Base.iterate(c.c, state)
-Base.getindex(c::CyclicContainer, i) = c.c[mod1(i, length(c))]
-Base.getindex(c::CyclicContainer, i::AbstractRange) = c.c[i]
+Base.getindex(c::CyclicContainer, i::Int) = c.c[mod1(i, length(c))]
+Base.getindex(c::CyclicContainer, i::AbstractVector) = getindex.(Ref(c.c), i)
 
 function Base.getindex(c::CyclicContainer)
     c.n += 1
@@ -68,17 +87,18 @@ COLORS = CyclicContainer(COLORSCHEME)
 # Set Makie theme
 ########################################################################################
 # The rest require `Makie` accessible in global scope
-MARKERS = [:circle, :dtriangle, :rect, :star5, :xcross, :diamond]
+MARKERS = CyclicContainer([:circle, :dtriangle, :rect, :star5, :xcross, :diamond])
 # Linestyles implement a better dash-dot than the original default (too much whitespace)
 # and a second dashed style with longer lines between dashes
-LINESTYLES = [:solid, :dash, :dot, [0, 3, 4, 5, 6], [0, 5, 6]]
-cycle = Cycle([:color, :marker], covary = true)
-_FONTSIZE = 18
-_LABELSIZE = 24
+LINESTYLES = CyclicContainer([:solid, :dash, :dot, Linestyle([0, 3, 4, 5, 6]), Linestyle([0, 5, 6])])
 
+cycle = Cycle([:color, :marker], covary = true)
+_FONTSIZE = 16
+_LABELSIZE = 20
 
 default_theme = Makie.Theme(
     # Main theme (colors, markers, etc.)
+    backgroundcolor = BGCOLOR,
     palette = (
         color = COLORSCHEME,
         marker = MARKERS,
@@ -88,7 +108,7 @@ default_theme = Makie.Theme(
     linewidth = 3.0,
     # Sizes of figure and font
     Figure = (
-        resolution = (1000, 600),
+        size = (1000, 600),
         figure_padding = 20,
     ),
     fontsize = _FONTSIZE,
@@ -96,25 +116,50 @@ default_theme = Makie.Theme(
         xlabelsize = _LABELSIZE,
         ylabelsize = _LABELSIZE,
         titlesize = _LABELSIZE,
+        backgroundcolor = BGCOLOR,
+        xgridcolor = AXISCOLOR,
+        ygridcolor = AXISCOLOR,
+        xtickcolor = AXISCOLOR,
+        ytickcolor = AXISCOLOR,
+        bottomspinecolor = AXISCOLOR,
+        topspinecolor = AXISCOLOR,
+        leftspinecolor = AXISCOLOR,
+        rightspinecolor = AXISCOLOR,
+        xlabelcolor = AXISCOLOR,
+        ylabelcolor = AXISCOLOR,
+        yticklabelcolor = AXISCOLOR,
+        xticklabelcolor = AXISCOLOR,
+        titlecolor = AXISCOLOR,
     ),
     Legend = (
         patchsize = (40f0, 20),
+    ),
+    Colorbar = (
+        gridcolor = AXISCOLOR,
+        tickcolor = AXISCOLOR,
+        bottomspinecolor = AXISCOLOR,
+        topspinecolor = AXISCOLOR,
+        leftspinecolor = AXISCOLOR,
+        rightspinecolor = AXISCOLOR,
+        labelcolor = AXISCOLOR,
+        ticklabelcolor = AXISCOLOR,
+        titlecolor = AXISCOLOR,
     ),
     # This command makes the cycle of color and marker
     # co-vary at the same time in plots that use markers
     ScatterLines = (cycle = cycle, markersize = 5),
     Scatter = (cycle = cycle, markersize = 15),
     Band = (cycle = :color,),
+    Lines = (cycle = Cycle([:color, :linestyle], covary = true),),
     Label = (textsize = _LABELSIZE,)
 )
 
 set_theme!(default_theme)
 
-
 # Testing style (colorscheme)
 if TEST_NEW_THEME
     using Random
-    fig = Figure(resolution = (1200, 800)) # show colors
+    fig = Figure(size = (900, 600)) # show colors
     ax6 = Axis(fig[2,3])
     ax5 = Axis(fig[2,2])
     ax4 = Axis(fig[2,1])
@@ -122,7 +167,7 @@ if TEST_NEW_THEME
     ax2 = Axis(fig[1,2]; title = "brightness")
     ax3 = Axis(fig[1,3]; title = "saturation")
     linewidth = 60
-    L = length(COLORSCHEME)
+    L = length(COLORS)
     function graycolor(s)
         x = round(Int, 100s)
         return "gray"*string(x)
@@ -159,7 +204,7 @@ function figuretitle!(fig, title;
         kwargs...,
     )
     Label(fig[0, :], title;
-        tellheight = true, tellwidth = false, valign, padding, font, kwargs...
+        tellheight = true, tellwidth = false, fontsize = _LABELSIZE, valign, padding, font, kwargs...
     )
     return
 end
@@ -230,17 +275,20 @@ const subplotgrid = axesgrid
 
 """
     label_axes!(axs::Array{Axis};
-        valign = :top, halign = :right, pad = 5, kwargs...
+        valign = :top, halign = :right, pad = 5,
+        labels = range('a'; step = 1, length = length(axs)),
+        add_box = false, boxkw = NamedTuple(), kw...
     )
 
 Add labels (like a,b,c,...) to all axes.
-Keywords customly adjust location, and `kwargs` are propagated to `Label`.
+Keywords customly adjust location, and `kw` are propagated to `Label`.
+If chosen, a box is added around the label with options `boxkw` propagated to `Box`.
 """
 function label_axes!(axs;
         labels = range('a'; step = 1, length = length(axs)),
         transformation = x -> "("*string(x)*")",
         valign = :top, halign = :right,
-        pad = 5, kwargs...,
+        pad = 5, add_box = false, kwargs...,
     )
 
     lbs = @. string(transformation(labels))
@@ -267,10 +315,23 @@ function label_axes!(axs;
             valign, halign, padding, font = :bold, justification = :center,
             kwargs...
         )
-        # but we can access the internals and get the box of the label,
-        # and then make an actual box around it
-        bx = Box(first(axs).parent; bbox = lab.layoutobservables.computedbbox, color = "gray")
-        Makie.translate!(bx.blockscene, 0, 0, -1)
+        if add_box
+            # but we can access the internals and get the box of the label,
+            # and then make an actual box around it
+            bx = Box(first(axs).parent; bbox = lab.layoutobservables.computedbbox, color = "transparent")
+            Makie.translate!(bx.blockscene, 0, 0, -1)
+        end
+
+        # TODO: This is a much better option:
+        # gc = ax.layoutobservables.gridcontent[]
+        # pos = gc.parent[gc.span.rows, gc.span.cols]
+        # Textbox(pos;
+        #     placeholder = string(round(rmi; sigdigits = 2)),
+        #     textcolor_placeholder = :black, valign = :top, halign = :right,
+        #     tellwidth = false, tellheight=false, boxcolor = (:white, 0.75),
+        #     textpadding = (4, 4, 4, 4)
+        # )
+
     end
     return
 end
@@ -307,7 +368,7 @@ function invert_luminance(color)
     c = to_color(color)
     hsl = Makie.HSLA(c)
     l = 1 - hsl.l
-    neg = Makie.RGBA(Makie.HSL(hsl.h, hsl.s, l, hsl.alpha))
+    neg = Makie.RGBA(Makie.HSLA(hsl.h, hsl.s, l, hsl.alpha))
     return neg
 end
 
@@ -328,13 +389,9 @@ end
 if isdefined(Main, :DrWatson)
     # Extension of DrWatson's save functionality for default CairoMakie saving
     function DrWatson._wsave(filename, fig::Makie.Figure, args...; kwargs...)
-        if filename[end-3] != '.'; filename *= ".png"; end
         if isdefined(Main, :CairoMakie)
-            CairoMakie.activate!()
-            CairoMakie.save(filename, fig, args...; px_per_unit = 4, kwargs...)
-            if isdefined(Main, :GLMakie)
-                GLMakie.activate!()
-            end
+            # Always save via CairoMakie for high quality if possible
+            CairoMakie.save(filename, fig, args...; px_per_unit = 2, kwargs...)
         else
             Makie.save(filename, fig, args...; kwargs...)
         end
@@ -342,27 +399,60 @@ if isdefined(Main, :DrWatson)
 
     # Using FileIO's load to make figures for black slides
     """
-        negate_remove_bg(file; threshold = 0.02, bg = :white)
+        negate_remove_bg(file; threshold = 0.02, bg = :white, overwrite = false)
 
-    Create an inverted version of the image at `file` with background removed,
+    Create an negated version of the image at `file` with background removed,
     so that it may be used in environments with dark background.
     The `threshold` decides when a pixel should be made transparent.
     If the image already has a dark background, pass `bg = :black` instead,
-    which will not invert the image but still remove the background.
+    which will not negate the image but still remove the background.
     """
-    function negate_remove_bg(file; threshold = 0.02, bg = :white)
-        # Expects white background image
+    function negate_remove_bg(file; threshold = 0.02, bg = :white, overwrite = false)
         img = DrWatson.FileIO.load(file)
-        x = map(img) do px
-            hsl = Makie.HSL(px)
-            l = bg == :white ? (1 - hsl.l) : hsl.l
-            neg = Makie.RGB(Makie.HSL(hsl.h, hsl.s, l))
-            # neg = Makie.RGB(one(eltype(img)) - px)
-            bg = abs2(neg) < threshold ? 0 : 1
-            Makie.RGBA(neg, bg)
+        x = map(px -> invert_color(px, bg, threshold), img)
+        if overwrite
+            newname = file
+        else
+            name, ext = splitext(file)
+            newname = name*"_inv"*ext
         end
-        name, ext = splitext(file)
-        DrWatson.FileIO.save(name*"_inv"*ext, x)
+        DrWatson.FileIO.save(newname, x)
     end
-end
 
+    function invert_color(px, bg = :white, threshold = 0.02)
+        hsl = Makie.HSLA(to_color(px))
+        l = (bg == :white) ? (1 - hsl.l) : hsl.l
+        neg = Makie.RGB(Makie.HSL(hsl.h, hsl.s, l))
+        α = abs2(neg) < threshold ? 0 : hsl.alpha
+        Makie.RGBA(neg, α)
+    end
+    function negate_remove_save(filename, fig::Makie.Figure)
+        DrWatson.wsave(filename, fig)
+        negate_remove_bg(filename; overwrite = true)
+    end
+
+    """
+        remove_bg(file; threshold = 0.02, overwrite = false)
+
+    Remove the background for figure in `file` (all pixels with luminosity > 1 - threshold).
+    Either overwrite original file or make a copy with suffix _bgr.
+    """
+    function remove_bg(file; threshold = 0.02, overwrite = false)
+        img = DrWatson.FileIO.load(file)
+        x = map(px -> make_transparent_pixel(px, threshold), img)
+        if overwrite
+            newname = file
+        else
+            name, ext = splitext(file)
+            newname = name*"_bgr"*ext
+        end
+        DrWatson.FileIO.save(newname, x)
+    end
+    function make_transparent_pixel(px, threshold = 0.02)
+        α = Makie.RGBA(to_color(px)).alpha
+        c = Makie.RGB(to_color(px))
+        α = abs2(c) > 1 - threshold ? 0 : α
+        return Makie.RGBA(c, α)
+    end
+
+end

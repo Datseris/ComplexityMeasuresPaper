@@ -1,11 +1,27 @@
 name = "ComplexityMeasuresPaper"
 
 [deps]
+ARFIMA = "9d0fb3db-ba49-4108-bc86-650b3813b6d5"
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 ComplexityMeasures = "ab4b797d-85ee-42ba-b621-05d793b346a2"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+DelayEmbeddings = "5732040d-69e3-5649-938a-b6b4f237613f"
+Distances = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
 DrWatson = "634d3b9d-ee7a-5ddf-bec9-22491ea816e1"
+GeometryTypes = "4d00f742-c7ba-57c2-abde-4428a4b178cb"
 JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
+JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+MarketData = "945b72a4-3b13-509d-9b46-1525bb5c06de"
+NBInclude = "0db19996-df87-5ea3-a455-e3a50d440464"
+PackageAnalyzer = "e713c705-17e4-4cec-abe0-95bf5bf3e10c"
+PredefinedDynamicalSystems = "31e2f376-db9e-427a-b76e-a14f56347a14"
+ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+TimeseriesSurrogates = "c804724b-8c18-5caa-8579-6025a0767c70"
 
 [compat]
 DrWatson = "2.12.1"
-julia = "1.8.5"
+julia = "1.10"
+ComplexityMeasures = "3.5"
+TimeseriesSurrogates = "2.7"
