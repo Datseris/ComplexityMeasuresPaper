@@ -7,7 +7,6 @@ using CairoMakie
 using PredefinedDynamicalSystems
 using Statistics
 using Random
-using DelayEmbeddings
 
 include(srcdir("theme.jl"))
 

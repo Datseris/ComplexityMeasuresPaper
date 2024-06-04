@@ -4,22 +4,20 @@ using ComplexityMeasures
 using PackageAnalyzer
 
 ancm = analyze(ComplexityMeasures)
-# results: for v3.4.1:
-# * Julia code in `src`: 3813 lines
-# * Julia code in `ext`: 0 lines (0.0% of `test` + `src` + `ext`)
-# * Julia code in `test`: 2357 lines (38.2% of `test` + `src` + `ext`)
-# * documentation in `docs`: 1493 lines (28.1% of `docs` + `src` + `ext`)
-# * documentation in README & docstrings: 3943 lines (50.8% of README + `src`)
+# results: for v3.5.0:
+# * Julia code in `src`: 3834 lines
+# * documentation in `docs`: 1953 lines (33.7% of `docs` + `src` + `ext`)
+# * Julia code in `test`: 2406 lines (38.6% of `test` + `src` + `ext`)
+# * documentation in README & docstrings: 4031 lines (51.3% of README + `src`)
 
 aneh = analyze("https://github.com/MattWillFlood/EntropyHub.jl")
 
 # Unfortunately this output is a bit missleading, because every single
-# source code file has an extra license string.
-# (which is weird since the software already has a license file.)
-# In anycase, the output is:
-# * Julia code in `src`: 3761 lines
-# * Julia code in `ext`: 0 lines (0.0% of `test` + `src` + `ext`)
+# source code file has an extra license string which inflates the
+# lines of source code.
+# (and it is is weird practice since the software already has a license file.)
+# In anycase, the output for v2.0.0 is:
+# * Julia code in `src`: 4994 lines
 # * Julia code in `test`: 4 lines (0.1% of `test` + `src` + `ext`)
-# * documentation in `docs`: 577 lines (13.3% of `docs` + `src` + `ext`)
-# * documentation in README & docstrings: 2204 lines (36.9% of README + `src`)
-# However, this counts all license strings as source code.
+# * documentation in `docs`: 771 lines (13.4% of `docs` + `src` + `ext`)
+# * documentation in README & docstrings: 3019 lines (37.7% of README + `src`)
