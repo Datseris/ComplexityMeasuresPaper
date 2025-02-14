@@ -4,11 +4,11 @@ using ComplexityMeasures
 using PackageAnalyzer
 
 ancm = analyze(ComplexityMeasures)
-# results: for v3.5.0:
-# * Julia code in `src`: 3834 lines
-# * documentation in `docs`: 1953 lines (33.7% of `docs` + `src` + `ext`)
-# * Julia code in `test`: 2406 lines (38.6% of `test` + `src` + `ext`)
-# * documentation in README & docstrings: 4031 lines (51.3% of README + `src`)
+# results: for v3.7.3:
+# * Julia code in `src`: 3841 lines
+# * Julia code in `test`: 2425 lines (38.7% of `test` + `src` + `ext`)
+# * documentation in `docs`: 1954 lines (33.7% of `docs` + `src` + `ext`)
+# * documentation in README & docstrings: 4066 lines (51.4% of README + `src`)
 
 aneh = analyze("https://github.com/MattWillFlood/EntropyHub.jl")
 

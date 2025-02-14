@@ -1,3 +1,9 @@
+# define the stock names (more like acronyms)
+# for downloading the stock closing price in the main script.
+# simply comment out several rows to run the script on less
+# stocks (which takes less time)
+
+
 all_stock_names =  [
 "AAPL", "ACN", "ADBE", "AMD", "AKAM", "ANSS", "ADSK",
 "ADP", "AVGO", "CDNS", "CSCO", "CTSH", "GLW", "DXC",

@@ -23,7 +23,7 @@ function closing_stock_timeseries(name::String, start::DateTime, finish::DateTim
     stockdata = yahoo(name, opt)
     stock_close = stockdata["Close"]
     actual_numbers = values(stock_close)
-    return actual_numbers
+    return float.(actual_numbers)
 end
 
 function overall_price_change(timeseries)
@@ -40,7 +40,12 @@ const snp_change = overall_price_change(snp_timeseries)
 results = DataFrame()
 
 @showprogress for stock in all_stock_names
-    timeseries = closing_stock_timeseries(stock, start, finish, frequency)
+    timeseries = nothing
+    try # some of the stock market names can't be downloaded at some times of day
+        timeseries = closing_stock_timeseries(stock, start, finish, frequency)
+    catch error
+        continue
+    end
     # This code uses ComplexityMeasures.jl
     permutation = entropy_normalized(OrdinalPatterns{4}(), timeseries)
     spectral = entropy_normalized(PowerSpectrum(), timeseries)
@@ -55,7 +60,7 @@ end
 
 # %% Visualize results
 fig = Figure(size = (600, 400))
-ax = Axis(fig[1, 1], xlabel="relative success", ylabel="complexity measure")
+ax = Axis(fig[1, 1]; xlabel="relative success %", ylabel="complexity measure")
 x = results.rel_success
 i = 1
 for ystr in names(results)
@@ -66,6 +71,6 @@ for ystr in names(results)
     i += 1
 end
 xlims!(ax, -2, 100)
-axislegend("entropy"; ax, position = :rc)
+axislegend("entropy"; ax, position = :rt, backgroundcolor = :white)
 display(fig)
-wsave(plotsdir("stocks.png"), fig)
+# wsave(plotsdir("stocks.png"), fig)
